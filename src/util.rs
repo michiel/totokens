@@ -15,28 +15,35 @@ use regex::Regex;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
+fn build_regex(s: &str) -> Regex {
+    // Escape special characters in the pattern
+    let pattern = regex::escape(s);
+
+    // Replace gitignore-style wildcards with regex syntax
+    let pattern = pattern.replace("\\*", ".*");
+    let pattern = pattern.replace("\\?", ".");
+
+    let regex = Regex::new(&format!("^{}$", pattern)).expect("Invalid regex");
+    regex
+}
 pub fn get_ignorelist(path: &PathBuf) -> Vec<regex::Regex> {
     let mut regex_list = Vec::new();
+    regex_list.push(build_regex(
+        &path
+            .to_str()
+            .expect("This path to have a str representation"),
+    ));
 
     if let Ok(file) = File::open(path) {
         for line in BufReader::new(file).lines() {
             let pattern = line.expect("Failed to read line");
-            let pattern = pattern.trim();
-
             // Skip blank lines and comments
             if pattern.is_empty() || pattern.starts_with('#') {
                 continue;
             }
+            let pattern = pattern.trim();
 
-            // Escape special characters in the pattern
-            let pattern = regex::escape(pattern);
-
-            // Replace gitignore-style wildcards with regex syntax
-            let pattern = pattern.replace("\\*", ".*");
-            let pattern = pattern.replace("\\?", ".");
-
-            let regex = Regex::new(&format!("^{}$", pattern)).expect("Invalid regex");
-            regex_list.push(regex);
+            regex_list.push(build_regex(&pattern));
         }
     }
 
