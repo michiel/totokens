@@ -1,5 +1,6 @@
 use clap::{Parser, Subcommand, ValueEnum};
 use std::fmt;
+use std::fs;
 use std::path::PathBuf;
 use tracing::{debug, Level};
 use tracing_subscriber::FmtSubscriber;
@@ -67,11 +68,10 @@ fn main() {
                 ExportFormat::Txt => {
                     let list = util::concat_file_contents_with_separator(&filelist);
                     let s = format!("{}", list);
-                    print!("{}", s.to_string());
+                    // print!("{}", s.to_string());
+                    fs::write(output, s).expect("This to work");
                 }
             }
-
-            // fs::write(output, out_string).expect("This to work");
         }
         None => {}
     }
