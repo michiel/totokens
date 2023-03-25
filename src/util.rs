@@ -30,8 +30,7 @@ fn build_regex(s: &str) -> Regex {
 pub fn get_ignorelist(path: &PathBuf) -> Vec<regex::Regex> {
     let mut regex_list = Vec::new();
     regex_list.push(build_regex(
-        &path
-            .to_str()
+        path.to_str()
             .expect("This path to have a str representation"),
     ));
 
@@ -44,7 +43,7 @@ pub fn get_ignorelist(path: &PathBuf) -> Vec<regex::Regex> {
             }
             let pattern = pattern.trim();
 
-            regex_list.push(build_regex(&pattern));
+            regex_list.push(build_regex(pattern));
         }
     }
     for regex in &regex_list {
@@ -80,7 +79,7 @@ fn remove_parent_path(parent: &Path, path: &Path) -> Option<PathBuf> {
     Some(relative_path.to_path_buf())
 }
 
-pub fn filter_paths(root: &Path, paths: Vec<PathBuf>, regexes: Vec<Regex>) -> Vec<PathBuf> {
+pub fn filter_paths(_root: &Path, paths: Vec<PathBuf>, regexes: Vec<Regex>) -> Vec<PathBuf> {
     let mut filtered_paths = Vec::new();
 
     for path in paths {
@@ -106,11 +105,11 @@ pub fn filter_paths(root: &Path, paths: Vec<PathBuf>, regexes: Vec<Regex>) -> Ve
 
 use std::fs;
 
-pub fn concat_file_contents_with_separator(root: &Path, paths: &Vec<PathBuf>) -> String {
+pub fn concat_file_contents_with_separator(_root: &Path, paths: &Vec<PathBuf>) -> String {
     let s: String = paths
-        .into_iter()
+        .iter()
         .filter_map(|path| {
-            if let Ok(contents) = fs::read_to_string(&path) {
+            if let Ok(contents) = fs::read_to_string(path) {
                 Some(format!(
                     "---- {}\n{}\n",
                     path.to_str().unwrap_or(""),
@@ -155,7 +154,7 @@ mod test {
 
         let regexes = vec![Regex::new("\\.rs$").unwrap(), Regex::new("\\.py$").unwrap()];
 
-        let filtered_paths = filter_paths(paths, regexes);
+        let filtered_paths = filter_paths(PathBuf::from("/path/to").as_ref(), paths, regexes);
 
         assert_eq!(filtered_paths, [PathBuf::from("/path/to/file.txt")]);
     }

@@ -61,13 +61,13 @@ fn main() {
 
             let full_filelist = util::list_files(input);
             let mut gptignore_file = input.clone();
-            gptignore_file.push(".gptignore".to_string());
+            gptignore_file.push(".gptignore");
             let ignorelist = util::get_ignorelist(&gptignore_file);
             let filelist = util::filter_paths(input.as_ref(), full_filelist, ignorelist);
             match &cli.export_format {
                 ExportFormat::Txt => {
-                    let list = util::concat_file_contents_with_separator(&input, &filelist);
-                    let s = format!("{}", list);
+                    let list = util::concat_file_contents_with_separator(input, &filelist);
+                    let s = list.to_string();
                     // print!("{}", s.to_string());
                     fs::write(output, s).expect("This to work");
                 }
