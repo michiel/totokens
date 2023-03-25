@@ -27,12 +27,21 @@ fn build_regex(s: &str) -> Regex {
     let regex = Regex::new(&format!("^{}", pattern)).expect("Invalid regex");
     regex
 }
+
+pub fn get_builtin_ignore_regexes() -> Vec<regex::Regex> {
+    let list = ["package-lock.json", "yarn.lock", ".git"];
+    list.into_iter().map(|e| build_regex(e)).collect()
+}
+
 pub fn get_ignorelist(path: &PathBuf) -> Vec<regex::Regex> {
     let mut regex_list = Vec::new();
     regex_list.push(build_regex(
         path.to_str()
             .expect("This path to have a str representation"),
     ));
+    for regex in get_builtin_ignore_regexes() {
+        regex_list.push(regex);
+    }
 
     if let Ok(file) = File::open(path) {
         for line in BufReader::new(file).lines() {
@@ -79,16 +88,17 @@ fn remove_parent_path(parent: &Path, path: &Path) -> Option<PathBuf> {
     Some(relative_path.to_path_buf())
 }
 
-pub fn filter_paths(_root: &Path, paths: Vec<PathBuf>, regexes: Vec<Regex>) -> Vec<PathBuf> {
+pub fn filter_paths(root: &Path, paths: Vec<PathBuf>, regexes: Vec<Regex>) -> Vec<PathBuf> {
     let mut filtered_paths = Vec::new();
 
     for path in paths {
         let mut matched = false;
         for regex in &regexes {
-            if regex.is_match(path.to_str().unwrap_or("")) {
+            let path_b = remove_parent_path(&root, &path).unwrap();
+            if regex.is_match(path_b.to_str().unwrap_or("")) {
                 debug!(
                     "filtered out file {} against match {}",
-                    path.to_str().unwrap_or(""),
+                    path_b.to_str().unwrap_or(""),
                     regex.to_string()
                 );
                 matched = true;
@@ -105,14 +115,15 @@ pub fn filter_paths(_root: &Path, paths: Vec<PathBuf>, regexes: Vec<Regex>) -> V
 
 use std::fs;
 
-pub fn concat_file_contents_with_separator(_root: &Path, paths: &Vec<PathBuf>) -> String {
+pub fn concat_file_contents_with_separator(root: &Path, paths: &Vec<PathBuf>) -> String {
     let s: String = paths
         .iter()
         .filter_map(|path| {
             if let Ok(contents) = fs::read_to_string(path) {
+                let path_b = remove_parent_path(&root, &path).unwrap();
                 Some(format!(
-                    "---- {}\n{}\n",
-                    path.to_str().unwrap_or(""),
+                    "--------\n{}\n\n{}\n",
+                    path_b.to_str().unwrap_or(""),
                     contents
                 ))
             } else {

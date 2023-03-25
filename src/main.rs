@@ -67,7 +67,7 @@ fn main() {
             match &cli.export_format {
                 ExportFormat::Txt => {
                     let list = util::concat_file_contents_with_separator(input, &filelist);
-                    let s = list.to_string();
+                    let s = list;
                     // print!("{}", s.to_string());
                     fs::write(output, s).expect("This to work");
                 }
