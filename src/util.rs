@@ -81,6 +81,22 @@ pub fn filter_paths(paths: Vec<PathBuf>, regexes: Vec<Regex>) -> Vec<PathBuf> {
     filtered_paths
 }
 
+use std::fs;
+
+pub fn concat_file_contents_with_separator(paths: &Vec<PathBuf>) -> String {
+    let s: String = paths
+        .into_iter()
+        .filter_map(|path| {
+            if let Ok(contents) = fs::read_to_string(&path) {
+                Some(format!("---- {}\n{}\n", path.to_string_lossy(), contents))
+            } else {
+                None
+            }
+        })
+        .collect();
+    s
+}
+
 #[cfg(test)]
 mod test {
     use crate::util::filter_paths;
