@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use tracing::debug;
 use walkdir::WalkDir;
 
 pub fn list_files(path: &PathBuf) -> Vec<PathBuf> {
@@ -23,7 +24,7 @@ fn build_regex(s: &str) -> Regex {
     let pattern = pattern.replace("\\*", ".*");
     let pattern = pattern.replace("\\?", ".");
 
-    let regex = Regex::new(&format!("^{}$", pattern)).expect("Invalid regex");
+    let regex = Regex::new(&format!("^{}", pattern)).expect("Invalid regex");
     regex
 }
 pub fn get_ignorelist(path: &PathBuf) -> Vec<regex::Regex> {
@@ -45,6 +46,9 @@ pub fn get_ignorelist(path: &PathBuf) -> Vec<regex::Regex> {
 
             regex_list.push(build_regex(&pattern));
         }
+    }
+    for regex in &regex_list {
+        debug!("added to ignore pattern : {}", regex.to_string());
     }
 
     regex_list
@@ -69,13 +73,25 @@ pub fn filter_strings(strings: Vec<String>, regexes: Vec<Regex>) -> Vec<String> 
     filtered_strings
 }
 
-pub fn filter_paths(paths: Vec<PathBuf>, regexes: Vec<Regex>) -> Vec<PathBuf> {
+use std::path::Path;
+
+fn remove_parent_path(parent: &Path, path: &Path) -> Option<PathBuf> {
+    let relative_path = path.strip_prefix(parent).ok()?;
+    Some(relative_path.to_path_buf())
+}
+
+pub fn filter_paths(root: &Path, paths: Vec<PathBuf>, regexes: Vec<Regex>) -> Vec<PathBuf> {
     let mut filtered_paths = Vec::new();
 
     for path in paths {
         let mut matched = false;
         for regex in &regexes {
             if regex.is_match(path.to_str().unwrap_or("")) {
+                debug!(
+                    "filtered out file {} against match {}",
+                    path.to_str().unwrap_or(""),
+                    regex.to_string()
+                );
                 matched = true;
                 break;
             }
@@ -90,12 +106,16 @@ pub fn filter_paths(paths: Vec<PathBuf>, regexes: Vec<Regex>) -> Vec<PathBuf> {
 
 use std::fs;
 
-pub fn concat_file_contents_with_separator(paths: &Vec<PathBuf>) -> String {
+pub fn concat_file_contents_with_separator(root: &Path, paths: &Vec<PathBuf>) -> String {
     let s: String = paths
         .into_iter()
         .filter_map(|path| {
             if let Ok(contents) = fs::read_to_string(&path) {
-                Some(format!("---- {}\n{}\n", path.to_string_lossy(), contents))
+                Some(format!(
+                    "---- {}\n{}\n",
+                    path.to_str().unwrap_or(""),
+                    contents
+                ))
             } else {
                 None
             }
