@@ -1,5 +1,9 @@
 # totokens
 
+## Installation
+
+Download a build for your platform from [Releases](https://github.com/michiel/totokens/releases)
+
 ## Example generation
 
 ```
