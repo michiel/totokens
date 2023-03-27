@@ -4,6 +4,14 @@
 
 Download a build for your platform from [Releases](https://github.com/michiel/totokens/releases)
 
+### MacOS
+
+```
+tar xvfz totokens-x86_64-apple-darwin.tar.gz
+xattr -dr com.apple.quarantine totokens
+./totokens
+```
+
 ## Example generation
 
 ```
