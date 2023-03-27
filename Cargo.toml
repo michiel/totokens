@@ -1,6 +1,6 @@
 [package]
 name = "totokens"
-version = "0.0.3"
+version = "0.0.4"
 authors = ["Michiel Kalkman <michiel@nosuchtype.com>"]
 edition = "2021"
 
