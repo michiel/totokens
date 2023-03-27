@@ -1,7 +1,7 @@
 use clap::{Parser, Subcommand, ValueEnum};
-use std::fmt;
-use std::fs;
+use std::io::Write;
 use std::path::PathBuf;
+use std::{fmt, fs, io};
 use tracing::{debug, Level};
 use tracing_subscriber::FmtSubscriber;
 
@@ -39,9 +39,9 @@ enum Commands {
         #[arg(short, long, value_name = "DIR")]
         input: PathBuf,
 
-        /// Sets the source
+        /// Sets the output file, will print to STDOUT if not set
         #[arg(short, long, value_name = "FILE")]
-        output: PathBuf,
+        output: Option<PathBuf>,
     },
 }
 
@@ -49,7 +49,7 @@ fn main() {
     let cli = Cli::parse();
 
     let subscriber = FmtSubscriber::builder()
-        .with_max_level(Level::TRACE)
+        .with_max_level(Level::DEBUG)
         .finish();
 
     tracing::subscriber::set_global_default(subscriber).expect("Setting default subscriber failed");
@@ -57,7 +57,11 @@ fn main() {
     match &cli.command {
         Some(Commands::ExportDir { input, output }) => {
             debug!("export-dir: input path : {}", input.display());
-            debug!("export-dir: output file : {}", output.display());
+            if let Some(output) = output {
+                debug!("export-dir: output file : {}", output.display());
+            } else {
+                debug!("export-dir: output to STDOUT");
+            }
 
             let full_filelist = util::list_files(input);
             let mut gptignore_file = input.clone();
@@ -68,8 +72,13 @@ fn main() {
                 ExportFormat::Txt => {
                     let list = util::concat_file_contents_with_separator(input, &filelist);
                     let s = list;
-                    // print!("{}", s.to_string());
-                    fs::write(output, s).expect("This to work");
+                    if let Some(output) = output {
+                        fs::write(output, s).expect("This to work");
+                    } else {
+                        let mut stdout = io::stdout();
+                        stdout.write_all(s.as_bytes()).expect("This to work");
+                        stdout.flush().expect("This to work");
+                    }
                 }
             }
         }

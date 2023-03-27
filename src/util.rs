@@ -29,15 +29,8 @@ fn build_regex(s: &str) -> Regex {
 }
 
 pub fn get_builtin_ignore_regexes() -> Vec<regex::Regex> {
-    let list = [
-        "package-lock.json",
-        "yarn.lock",
-        ".git",
-        "*lock",
-        "*.cache",
-        "*.tmp*",
-        "*.log",
-    ];
+    let list = std::include_str!("default-ignore-list.txt").split("\n");
+    let list: Vec<&str> = list.into_iter().filter(|s| !s.is_empty()).collect();
     list.into_iter().map(|e| build_regex(e)).collect()
 }
 

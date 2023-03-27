@@ -1,0 +1,73 @@
+# Compiled object files and executables
+*.o
+*.ko
+*.obj
+*.elf
+*.exe
+*.out
+*.dll
+*.so
+*.dylib
+
+# Temporary files and logs
+*.log
+*.bak
+*.swp
+*~
+*.swp
+*.swo
+*.swn
+.DS_Store
+._*
+
+# Dependency directories
+/node_modules
+/bower_components
+/vendor
+
+# Build output directories
+/dist
+/build
+/target
+/bin
+/obj
+
+# IDE-specific files
+.vscode/
+.idea/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# OS-specific files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Text editor swap files
+*.swp
+*.swo
+*.swn
+*.swm
+*.lock
+
+# Project-specific files
+*.iml
+*.log
+
+# Backup files
+*.bak
+*.backup
+*.back
+backup*/
+
+# Cache and build files
+.cache/
+.cargo/
+yarn-error.log
+
+# Various
+.git/
+package-lock.json
+*.tmp
+
