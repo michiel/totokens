@@ -1,5 +1,5 @@
 use std::path::PathBuf;
-use tracing::{debug, trace};
+use tracing::{debug, error, trace};
 use walkdir::WalkDir;
 
 pub fn list_files(path: &PathBuf) -> Vec<PathBuf> {
@@ -30,7 +30,10 @@ fn build_regex(s: &str) -> Regex {
 
 pub fn get_builtin_ignore_regexes() -> Vec<regex::Regex> {
     let list = std::include_str!("default-ignore-list.txt").split("\n");
-    let list: Vec<&str> = list.into_iter().filter(|s| !s.is_empty()).collect();
+    let list: Vec<&str> = list
+        .into_iter()
+        .filter(|s| !s.is_empty() || s.starts_with('#'))
+        .collect();
     list.into_iter().map(|e| build_regex(e)).collect()
 }
 
@@ -46,14 +49,19 @@ pub fn get_ignorelist(path: &PathBuf) -> Vec<regex::Regex> {
 
     if let Ok(file) = File::open(path) {
         for line in BufReader::new(file).lines() {
-            let pattern = line.expect("Failed to read line");
-            // Skip blank lines and comments
-            if pattern.is_empty() || pattern.starts_with('#') {
-                continue;
+            match line {
+                Ok(line) => {
+                    // Skip blank lines and comments
+                    if line.is_empty() || line.starts_with('#') {
+                        continue;
+                    }
+                    let line = line.trim();
+                    regex_list.push(build_regex(line));
+                }
+                Err(_) => {
+                    error!("failed to read a line from {}", path.display());
+                }
             }
-            let pattern = pattern.trim();
-
-            regex_list.push(build_regex(pattern));
         }
     }
     for regex in &regex_list {

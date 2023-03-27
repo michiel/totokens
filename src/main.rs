@@ -63,9 +63,9 @@ fn main() {
 
     match &cli.command {
         Some(Commands::ExportDir { input, output }) => {
-            debug!("export-dir: input path : {}", input.display());
+            info!("export-dir: input path : {}", input.display());
             if let Some(output) = output {
-                debug!("export-dir: output file : {}", output.display());
+                info!("export-dir: output file : {}", output.display());
             } else {
                 debug!("export-dir: output to STDOUT");
             }
