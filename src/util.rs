@@ -1,5 +1,5 @@
 use std::path::PathBuf;
-use tracing::debug;
+use tracing::{debug, trace};
 use walkdir::WalkDir;
 
 pub fn list_files(path: &PathBuf) -> Vec<PathBuf> {
@@ -97,7 +97,7 @@ pub fn filter_paths(root: &Path, paths: Vec<PathBuf>, regexes: Vec<Regex>) -> Ve
         for regex in &regexes {
             let path_b = remove_parent_path(&root, &path).unwrap();
             if regex.is_match(path_b.to_str().unwrap_or("")) {
-                debug!(
+                trace!(
                     "filtered out file {} against match {}",
                     path_b.to_str().unwrap_or(""),
                     regex.to_string()
@@ -133,6 +133,14 @@ pub fn concat_file_contents_with_separator(root: &Path, paths: &Vec<PathBuf>) ->
         })
         .collect();
     s
+}
+
+use tiktoken_rs::p50k_base;
+
+pub fn tokenise_p50k(s: &str) -> Vec<usize> {
+    let bpe = p50k_base().unwrap();
+    let tokens = bpe.encode_with_special_tokens(s);
+    tokens
 }
 
 #[cfg(test)]
