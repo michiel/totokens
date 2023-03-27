@@ -29,7 +29,15 @@ fn build_regex(s: &str) -> Regex {
 }
 
 pub fn get_builtin_ignore_regexes() -> Vec<regex::Regex> {
-    let list = ["package-lock.json", "yarn.lock", ".git"];
+    let list = [
+        "package-lock.json",
+        "yarn.lock",
+        ".git",
+        "*lock",
+        "*.cache",
+        "*.tmp*",
+        "*.log",
+    ];
     list.into_iter().map(|e| build_regex(e)).collect()
 }
 
