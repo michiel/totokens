@@ -29,12 +29,12 @@ fn build_regex(s: &str) -> Regex {
 }
 
 pub fn get_builtin_ignore_regexes() -> Vec<regex::Regex> {
-    let list = std::include_str!("default-ignore-list.txt").split("\n");
+    let list = std::include_str!("default-ignore-list.txt").split('\n');
     let list: Vec<&str> = list
         .into_iter()
         .filter(|s| !s.is_empty() || s.starts_with('#'))
         .collect();
-    list.into_iter().map(|e| build_regex(e)).collect()
+    list.into_iter().map(build_regex).collect()
 }
 
 pub fn get_ignorelist(path: &PathBuf) -> Vec<regex::Regex> {
@@ -103,7 +103,7 @@ pub fn filter_paths(root: &Path, paths: Vec<PathBuf>, regexes: Vec<Regex>) -> Ve
     for path in paths {
         let mut matched = false;
         for regex in &regexes {
-            let path_b = remove_parent_path(&root, &path).unwrap();
+            let path_b = remove_parent_path(root, &path).unwrap();
             if regex.is_match(path_b.to_str().unwrap_or("")) {
                 trace!(
                     "filtered out file {} against match {}",
@@ -129,7 +129,7 @@ pub fn concat_file_contents_with_separator(root: &Path, paths: &Vec<PathBuf>) ->
         .iter()
         .filter_map(|path| {
             if let Ok(contents) = fs::read_to_string(path) {
-                let path_b = remove_parent_path(&root, &path).unwrap();
+                let path_b = remove_parent_path(root, path).unwrap();
                 Some(format!(
                     "--------\n{}\n\n{}\n",
                     path_b.to_str().unwrap_or(""),
@@ -147,8 +147,8 @@ use tiktoken_rs::p50k_base;
 
 pub fn tokenise_p50k(s: &str) -> Vec<usize> {
     let bpe = p50k_base().unwrap();
-    let tokens = bpe.encode_with_special_tokens(s);
-    tokens
+    
+    bpe.encode_with_special_tokens(s)
 }
 
 #[cfg(test)]
